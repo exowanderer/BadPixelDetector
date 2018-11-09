@@ -1,0 +1,17 @@
+%cpaste
+for k in range(len(classme)):
+    ax.clear()
+    ax.plot(quirks2[k])
+    ax.set_title(str(k+1)  + ' / ' + str(quirks2.shape[0]) + ';' + 'Current:'+classme[k])
+    fig.canvas.draw()
+    new_input = input('Class Now? [1:Noisy, 2:HP, 3:RTN, 4:CR, 5:Other, 0:Oops] ')
+	if new_input == '':
+		new_input = classme[k]
+    class_keep[k] = classme[k]
+    if new_input != classme[k]:
+        checkOW = input('Are you sure you want to overwrite? [y/n] ')
+        if 'y' in checkOW.lower():
+            check_keep[k] = new_input
+            print('Changed ' + classme[k] + ' to a ' + new_input + ' on the ' + str(k+1) + ' entry')
+
+--
