@@ -1,9 +1,9 @@
 import numpy as np
 from matplotlib import pyplot as plt
-plt.ion()
 
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
+
 from tqdm import tqdm
 
 
@@ -23,7 +23,8 @@ def hot_pixel(xarr, max_growth=4e4, growth_rate=0.05, noise=1000):
     return np.random.normal(signal, noise)
 
 
-def saturated_hot_pixel(xarr, max_growth=4e4, sat_delta=1e4, growth_rate=1, noise=1000):
+def saturated_hot_pixel(xarr, max_growth=4e4, sat_delta=1e4,
+                        growth_rate=1, noise=1000):
     # satruated hot pixel
     background = normal_pixel(xarr)
     signal = (max_growth - sat_delta) * \
@@ -55,7 +56,8 @@ def cosmic_ray_pixel(xarr, strength=3e4, where_hit=None, noise=1000):
     return np.random.normal(signal, noise)
 
 
-def popcorn_pixel(xarr, strength=1000, where_up=None, where_down=None, noise=1000):
+def popcorn_pixel(xarr, strength=1000, where_up=None,
+                  where_down=None, noise=1000):
     # popcorn
     if where_up is None:
         where_up = np.random.choice(range(xarr.size // 3, xarr.size // 2))
@@ -108,6 +110,8 @@ if __name__ == '__main__':
                     help='Number of bad pixels per class')
     ap.add_argument('-ts', '--n_timesteps', type=int, default=108,  # NIRCam
                     help='Number of time steps per sample')
+    ap.add_argument('-bn', '--base_noise', type=float, default=1000,
+                    help='Mean Std-Dev noise in e- for normal pixels')
     ap.add_argument('-pn', '--plot_now', action='store_true',
                     help='Toggle to plot one of each class')
     ap.add_argument('-sn', '--save_name', type=str, default=None,
@@ -123,6 +127,7 @@ if __name__ == '__main__':
     n_bad = int(clargs.n_bad)
     n_timesteps = int(clargs.n_timesteps)
     non_uniform = clargs.non_uniform_distribution
+    base_noise = clargs.base_noise
 
     xarr = np.arange(n_timesteps)
 
@@ -163,7 +168,7 @@ if __name__ == '__main__':
     # Create features per class based on label
     features = np.zeros((n_samples, n_timesteps))
     for k, label_ in tqdm(enumerate(labels), total=n_samples):
-        features[k] = classes[label_](xarr)
+        features[k] = classes[label_](xarr, noise=base_noise)
 
     if plot_now:
         norm_samp = np.random.choice(np.where(labels == 0)[0])
