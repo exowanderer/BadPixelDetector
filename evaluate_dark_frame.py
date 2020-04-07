@@ -29,8 +29,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 
 
-def build_lstm_autoencoder(train_x, n_units=128, num_decoder_tokens=4,
-                           latent_dim=2, dropout_rate=0.2, fit_now=False,
+def build_lstm_autoencoder(train_x, n_units=128,
+                           dropout_rate=0.2, fit_now=False,
                            epochs=10, batch_size=4096, validation_split=0.2,
                            shuffle=True, loss='mae', optimizer='adam'):
 
@@ -147,9 +147,8 @@ if __name__ == '__main__':
 
     # history = joblib.load(
     #     f'LSTM{n_units}_{base_name}_history_{epochs}epochs.joblib.save')
-    lstm_autoencoder = lstm_autoencoder = build_lstm_autoencoder(
+    lstm_autoencoder = build_lstm_autoencoder(
         train_x=train_x, n_units=n_units,
-        num_decoder_tokens=4, latent_dim=2,
         epochs=epochs, batch_size=batch_size)
 
     lstm_autoencoder.load(
