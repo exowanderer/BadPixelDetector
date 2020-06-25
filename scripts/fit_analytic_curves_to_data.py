@@ -72,59 +72,18 @@ def noisy_pixel(xarr, noise_mult=2, noise=1000):
     return normal_pixel(xarr, noise=noise_mult * noise)
 
 
-def non_uniform_distribution(n_norm, n_bad, frac_hot=0.5, frac_sat_hot=0.1,
-                             frac_cold=0.1, frac_sat_cold=0.1, frac_cosmic=0.1,
-                             frac_popcorn=0.01, frac_noisy=0.09):
-    # if we want non uniform ditributions
-    n_hot = int(n_bad * frac_hot)
-    n_sat_hot = int(n_bad * frac_sat_hot)
-    n_cold = int(n_bad * frac_cold)
-    n_sat_cold = int(n_bad * frac_sat_cold)
-    n_cosmicray = int(n_bad * frac_cosmic)
-    n_popcorn = int(n_bad * frac_popcorn)
-    n_noisy = int(n_bad * frac_noisy)
-
-    n_per_class = np.array([n_norm,
-                            n_hot,
-                            n_sat_hot,
-                            n_cold,
-                            n_sat_cold,
-                            n_cosmicray,
-                            n_popcorn,
-                            n_noisy])
-
-    # Set/take leftovers to/from `hot pixels`:1
-    n_leftover = n_bad - n_per_class.sum()
-    n_per_class[1] = n_per_class[1] + n_leftover
-
-    return n_per_class
-
 if __name__ == '__main__':
     from argparse import ArgumentParser
     ap = ArgumentParser()
-    ap.add_argument('-n', '--n_norm', type=int, default=4000000,  # 4M
-                    help='Number of normal pixels')
-    ap.add_argument('-b', '--n_bad', type=int, default=50000,  # 50K
-                    help='Number of bad pixels per class')
-    ap.add_argument('-ts', '--n_timesteps', type=int, default=108,  # NIRCam
-                    help='Number of time steps per sample')
     ap.add_argument('-pn', '--plot_now', action='store_true',
                     help='Toggle to plot one of each class')
     ap.add_argument('-sn', '--save_name', type=str, default=None,
                     help='Toogle to save the pickle file')
-    ap.add_argument('-nud', '--non_uniform_distribution', action='store_true',
-                    help='Toggle for a non-uniform distribution of bad pixels')
 
     clargs = ap.parse_args()
 
     plot_now = clargs.plot_now
     save_name = clargs.save_name
-    n_norm = int(clargs.n_norm)
-    n_bad = int(clargs.n_bad)
-    n_timesteps = int(clargs.n_timesteps)
-    non_uniform = clargs.non_uniform_distribution
-
-    xarr = np.arange(n_timesteps)
 
     classes = np.array([normal_pixel,
                         hot_pixel,
