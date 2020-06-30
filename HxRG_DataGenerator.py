@@ -10,16 +10,20 @@ from tqdm import tqdm
 
 class Pixel(object):
     """
-    Pixel class is used to generate a single pixel time series from an HxRG dark current. This can be done iteratively; but it canonically expected to
+    Pixel class is used to generate a single pixel time series from an HxRG 
+    dark current. This can be done iteratively; but it canonically expected to
     be used as a subclass to the HxRG object below.
 
-    HxRG detectors include HST/WFC3-IR, JWST/NIRISS, JWST/NIRcam, JWST/NIRSpec, Roman Space Telescope suite of detectors, and dozens of ground-based, IR detectors.
+    HxRG detectors include HST/WFC3-IR, JWST/NIRISS, JWST/NIRcam, JWST/NIRSpec, 
+    Roman Space Telescope suite of detectors, and dozens of ground-based, IR 
+    detectors.
 
     Args:
         object (object): standard Python class inheritance
 
     Returns:
-        pixel (instance): instance of the Pixel class, with methods to generate numerous pixel time series categories for an HxRG detector
+        pixel (instance): instance of the Pixel class, with methods to generate 
+        numerous pixel time series categories for an HxRG detector
     """
     __all__ = ['normal_pixel', 'hot_pixel', 'saturated_hot_pixel', 'cold_pixel',
                'saturated_cold_pixel', 'cosmic_ray_pixel', 'popcorn_pixel',
@@ -30,7 +34,8 @@ class Pixel(object):
                  darkcurrent=0.0856, bias=10000, noise=1000,
                  max_hotcold_pixel=4e4, hotcold_growth_rate=0.05,
                  saturated_delta=1e4, saturated_growth_rate=1,
-                 cosmic_ray_strength=3e4, popcorn_strength=1000, cosmic_ray_hit_idx=None, popcorn_pixel_up=None,
+                 cosmic_ray_strength=3e4, popcorn_strength=1000,
+                 cosmic_ray_hit_idx=None, popcorn_pixel_up=None,
                  popcorn_pixel_down=None, noisy_pixel_noise=2000):
         """
         __init__ Initial configuration for the Pixel class instance.
@@ -45,13 +50,16 @@ class Pixel(object):
             number of reads up the ramp, if `xarr` is not provided,
             by default 100
         max_normal_pixel : int, optional
-            averager number of electrons on top of the bias for `normal` pixels, by default 120
+            averager number of electrons on top of the bias for `normal` 
+            pixels, by default 120
         normal_growth_rate : float, optional
-            exponenital growth rate up the ramp for normal pixels (depends on illumination), by default 0.01
+            exponenital growth rate up the ramp for normal pixels (depends on 
+            illumination), by default 0.01
         darkcurrent : float, optional
             Dark current rate in electrons per hour, by default 0.0856
         bias : int, optional
-            baseline threshold for initial voltage (in electrons) on the detector, by default 10000
+            baseline threshold for initial voltage (in electrons) on the 
+            detector, by default 10000
         noise : int, optional
             Expected std-dev of noise level in electrons for all signals,
             by default 1000
@@ -63,12 +71,14 @@ class Pixel(object):
             level below `max_hotcold_pixels` for saturated pixels to end,
             by default 1e4
         saturated_growth_rate : float, optional
-            growth reate in (electrons per frame) for saturated hot/cold pixels, by default 1.0
+            growth reate in (electrons per frame) for saturated hot/cold 
+            pixels, by default 1.0
         cosmic_ray_strength : int, optional
             average electrons deposited by cosmic rays (+\- noise),
             by default 3e4
         popcorn_strength : int, optional
-            average extra electrons read out by detector in popcorn event [might be a factor of 2], by default 1000
+            average extra electrons read out by detector in popcorn event 
+            [might be a factor of 2], by default 1000
         cosmic_ray_hit_idx : int, optional
             index where cosmic rays hit the detector (index ~ time),
             by default None
@@ -101,9 +111,14 @@ class Pixel(object):
 
     def normal_pixel(self):
         """
-        normal_pixel creates a non `bad pixel` with slight illumination and measureable dark current
+        normal_pixel creates a non `bad pixel` with slight illumination and 
+        measureable dark current
 
-        This is the base `Pixel` behaviour, where 99% of all HxRG pixels have been to shown to be `normal`. All other classes of pixels have this pixel behaviour as their background signal; e.g. a "hot pixel" is an exponential ramp on top of a `normal pixel`; and a "cosmic ray" is a step function on top of a `normal pixel`
+        This is the base `Pixel` behaviour, where 99% of all HxRG pixels have 
+        been to shown to be `normal`. All other classes of pixels have this 
+        pixel behaviour as their background signal; e.g. a "hot pixel" is an 
+        exponential ramp on top of a `normal pixel`; and a "cosmic ray" is a 
+        step function on top of a `normal pixel`
 
         Returns
         -------
@@ -123,7 +138,9 @@ class Pixel(object):
         """
         hot_pixel Simulates the capacitor malfuction associated with a hot pixel
 
-        Creates an exponential ramp effect on top of a normal pixel, as is physically expected (and measured) to be associated with a hot pixel, time-series with HxRG detectors
+        Creates an exponential ramp effect on top of a normal pixel, as is 
+        physically expected (and measured) to be associated with a hot pixel, 
+        time-series with HxRG detectors
 
         Returns
         -------
@@ -140,9 +157,12 @@ class Pixel(object):
 
     def saturated_hot_pixel(self):
         """
-        saturated_hot_pixel Simulates a saturated hot pixel from an HxRG detector
+        saturated_hot_pixel Simulates a saturated hot pixel from an HxRG 
+        detector
 
-        Some hot pixels have a dramatic rise time, with a saturated shorter than that of max flux or even other hot pixels. This category of bad pixel is associated with a malfunctioning capacitor
+        Some hot pixels have a dramatic rise time, with a saturated shorter 
+        than that of max flux or even other hot pixels. This category of bad 
+        pixel is associated with a malfunctioning capacitor
 
         Returns
         -------
@@ -161,7 +181,11 @@ class Pixel(object):
         """
         cold_pixel Simulates a cold pixel from an HxRG detector
 
-        Anomalous bad pixels with HxRG detectors can sometimes start very high, and then dramatically fall. These are often referred to as "inverted hot pixels"; here we name them "cold pixels" because the effect is that the number of electrons read out dramatically decreases, like a drop in 'temperature'. This bad pixel is associated with capacitor malfunction.
+        Anomalous bad pixels with HxRG detectors can sometimes start very high, 
+        and then dramatically fall. These are often referred to as "inverted 
+        hot pixels"; here we name them "cold pixels" because the effect is that 
+        the number of electrons read out dramatically decreases, like a drop in 
+        'temperature'. This bad pixel is associated with capacitor malfunction.
 
         Returns
         -------
@@ -175,9 +199,12 @@ class Pixel(object):
 
     def saturated_cold_pixel(self):
         """
-        saturated_cold_pixel Simulates a saturated cold pixel from an HxRG detector
+        saturated_cold_pixel Simulates a saturated cold pixel from an HxRG 
+        detector
 
-        Some cold pixels have a dramatic decay time, with a saturated shorter than that of max flux or even other cold pixels. This category of bad pixel is associated with a malfunctioning capacitor
+        Some cold pixels have a dramatic decay time, with a saturated shorter 
+        than that of max flux or even other cold pixels. This category of bad 
+        pixel is associated with a malfunctioning capacitor
 
         Returns
         -------
@@ -193,9 +220,14 @@ class Pixel(object):
 
     def cosmic_ray_pixel(self):
         """
-        cosmic_ray_pixel Simulates the cosmic ray effect of spontanously large number of electrons being detected in the dark frame
+        cosmic_ray_pixel Simulates the cosmic ray effect of spontanously large 
+        number of electrons being detected in the dark frame
 
-        When a high energy charged particle (proton, electron, positron, magnetron (hehe)) interact with the HxRG pixel walls, they can dramatically deposit energy in the form of excess electrons. This effect has the apperance in the IR dark frame stepping the electrons up by 1000s - 10000s electrons in a single frame.
+        When a high energy charged particle (proton, electron, positron, 
+        magnetron (hehe)) interact with the HxRG pixel walls, they can 
+        dramatically deposit energy in the form of excess electrons. This 
+        effect has the apperance in the IR dark frame stepping the electrons up 
+        by 1000s - 10000s electrons in a single frame.
 
         Returns
         -------
@@ -217,9 +249,21 @@ class Pixel(object):
 
     def popcorn_pixel(self):
         """
-        popcorn_pixel Simulates the Random Telegraph Noise (RTN) or "Popcorn Pixel" effect of spontanously increasing and (often) later decreasing the number of electrons in a given pixel.
+        popcorn_pixel Simulates the Random Telegraph Noise (RTN) or "Popcorn 
+        Pixel" effect of spontanously increasing and (often) later decreasing 
+        the number of electrons in a given pixel.
 
-        This effect is associated with a read-out error, such that a bit is randomly flipped in the read out electronics or above, which has the effect of stepping up the electrons read out by 1000s - 10000s in a single frame; very often, the effect will invert, which thus spontaneously decreases the electrons read out by 1000s - 10000s in a single frame. The number of electrons reduced (after) is almost always the same number as the number of electrons gained (first). This effect looks like a top-hat function. It is not a temporally stationary effect; but some pixels are much more likely than others to induce this signal. Moreover, because the effect is associated with a bit flip, it is expected to be a factor 2 +\- noise.
+        This effect is associated with a read-out error, such that a bit is 
+        randomly flipped in the read out electronics or above, which has the 
+        effect of stepping up the electrons read out by 1000s - 10000s in a 
+        single frame; very often, the effect will invert, which thus 
+        spontaneously decreases the electrons read out by 1000s - 10000s in a 
+        single frame. The number of electrons reduced (after) is almost always 
+        the same number as the number of electrons gained (first). This effect 
+        looks like a top-hat function. It is not a temporally stationary 
+        effect; but some pixels are much more likely than others to induce this 
+        signal. Moreover, because the effect is associated with a bit flip, it 
+        is expected to be a factor 2 +\- noise.
 
         Returns
         -------
@@ -245,7 +289,8 @@ class Pixel(object):
         """
         noisy_pixel Simulates the effect of an excessively noisuy pixel
 
-        Some pixels are just more noisy than others. Here we simulate a `normal pixel` and then increase its average noise properties (~2x)
+        Some pixels are just more noisy than others. Here we simulate a `normal 
+        pixel` and then increase its average noise properties (~2x)
 
         Returns
         -------
@@ -261,23 +306,33 @@ class Pixel(object):
 
 class HxRG(Pixel):
     """
-    HxRG class is used to generate a large number of pixel time series to simulate a full (or subframe) HxRG dark current data cube. This can be done independently or as a subclass to the HxRGDataGenerator object below.
+    HxRG class is used to generate a large number of pixel time series to 
+    simulate a full (or subframe) HxRG dark current data cube. This can be done 
+    independently or as a subclass to the HxRGDataGenerator object below.
 
-    HxRG detectors include HST/WFC3-IR, JWST/NIRISS, JWST/NIRcam, JWST/NIRSpec, Roman Space Telescope suite of detectors, and dozens of ground-based, IR detectors.
+    HxRG detectors include HST/WFC3-IR, JWST/NIRISS, JWST/NIRcam, JWST/NIRSpec, 
+    Roman Space Telescope suite of detectors, and dozens of ground-based, IR 
+    detectors.
 
     Args:
-        Pixel (object): inherits the Pixel class (above) to generate a well-defined distribution of `normal` and `bad` pixels
+        Pixel (object): inherits the Pixel class (above) to generate a 
+        well-defined distribution of `normal` and `bad` pixels
 
     Returns:
-        HxRG (instance): instance of the HxRG class, with methods to distribute the percent of good + bad pixels over the detector; as well as `populate` the detector with thousands to millions of pixel time series with respect to HxRG detectors' behaviours.
+        HxRG (instance): instance of the HxRG class, with methods to distribute 
+        the percent of good + bad pixels over the detector; as well as 
+        `populate` the detector with thousands to millions of pixel time series 
+        with respect to HxRG detectors' behaviours.
     """
 
     def __init__(self, n_norm, n_bad, populate=False,
                  percent_per_class=None):
         """
-        __init__ Initiates the configuration of an HxRG detector, as a set of thousands to millions of IR time series ('pixels')
+        __init__ Initiates the configuration of an HxRG detector, as a set of 
+        thousands to millions of IR time series ('pixels')
 
-        Create the underlying distribution and number of good + bad pixels over the full (or subframe) HxRG image, data cube
+        Create the underlying distribution and number of good + bad pixels over 
+        the full (or subframe) HxRG image, data cube
 
         Parameters
         ----------
@@ -286,9 +341,12 @@ class HxRG(Pixel):
         n_bad : int
             Number of 'bad' pixels
         populate : bool, optional
-            Whether to generate `n_pixels` time-series as a list below, by default False
+            Whether to generate `n_pixels` time-series as a list below, by 
+            default False
         percent_per_class : 1Darray (8 elements), optional
-            the percent of each bad pixel as a function of number of total pixels. The order *must* be [normal, hot, hot saturated, cold, cold saturated, cosmic ray, popcorn, noisy], by default None
+            the percent of each bad pixel as a function of number of total 
+            pixels. The order *must* be [normal, hot, hot saturated, cold, cold 
+            saturated, cosmic ray, popcorn, noisy], by default None
         """
         super().__init__()
 
@@ -308,9 +366,19 @@ class HxRG(Pixel):
 
     def configure_pixel_percentage(self):
         """
-        configure_pixel_percentage Convert from percent_per_class to fraction of each category of bad pixel and normal pixel
+        configure_pixel_percentage Convert from percent_per_class to fraction 
+        of each category of bad pixel and normal pixel
 
-        The inputs for `percent_per_class` are in percetn of pixels for each category of good + bad pixels. This method reorganizes that information, as wll as establishes both the default (percent_per_class=None) and special example (percent_per_class='nircam') distribution. The default behaviour places all pixels in the 'normal' bin with `self.frac_normal = 1`. The special example (percent_per_class='nircam') option distributes the percent of each bad pixel as described in Raucher et al 2017. If `percent_per_class` is provided as an 8-element array, then this function will renormalize it to integrate to 1.0.
+        The inputs for `percent_per_class` are in percetn of pixels for each 
+        category of good + bad pixels. This method reorganizes that 
+        information, as wll as establishes both the default 
+        (percent_per_class=None) and special example 
+        (percent_per_class='nircam') distribution. The default behaviour places 
+        all pixels in the 'normal' bin with `self.frac_normal = 1`. The special 
+        example (percent_per_class='nircam') option distributes the percent of 
+        each bad pixel as described in Raucher et al 2017. If 
+        `percent_per_class` is provided as an 8-element array, then this 
+        function will renormalize it to integrate to 1.0.
         """
         percent_per_class_given = False
         if self.percent_per_class is None:
@@ -367,12 +435,15 @@ class HxRG(Pixel):
 
     def configure_pixel_numbers(self, assign_remainder=0):
         """
-        configure_pixel_numbers convert from percentage of pixels to actual number of pixels, and assigns the remainder to the normal pixel category (or other assigned through kwarg above)
+        configure_pixel_numbers convert from percentage of pixels to actual 
+        number of pixels, and assigns the remainder to the normal pixel 
+        category (or other assigned through kwarg above)
 
         Parameters
         ----------
         assign_remainder : int, optional
-            index associated with the category of good or bad pixel that the remainder of all pixels on the detector should be placed within,
+            index associated with the category of good or bad pixel that the 
+            remainder of all pixels on the detector should be placed within,
             by default 0:normal
         """
         self.n_hot = int(self.n_bad * self.frac_hot)
@@ -402,7 +473,8 @@ class HxRG(Pixel):
         """
         populate_detector Create a simualtion fo the HxRG detector in question
 
-        Iterate over the number of pixels to create a simulated HxRG dark frame (image cube) of 'mostly' normal pixels with ~1% of bad pixels.
+        Iterate over the number of pixels to create a simulated HxRG dark frame 
+        (image cube) of 'mostly' normal pixels with ~1% of bad pixels.
         """
         self.pixels = []
         for method_name, n_samples in zip(self.__all__, self.n_per_class):
@@ -420,7 +492,13 @@ class HxRGDataGenerator(Sequence):  # , HxRG
     """
     HxRGDataGenerator Keras Data Generator for HxRG time-series dark pixels
 
-    This Keras Data Generator can be used to train a neural network on the HxRG dark current time-series dark pixels to classify, regress, or anomaly detect bad pixels from normal pixels. HxRG dark frame pixels are a time-series of 10-1000+ 'read up the ramp' The generator will samples `batch_size` number of pixel time series, based on the prescribed `percent_per_class` distribution of good + bad pixels (e.g. 99% vs 1%, respectively).
+    This Keras Data Generator can be used to train a neural network on the HxRG 
+    dark current time-series dark pixels to classify, regress, or anomaly 
+    detect bad pixels from normal pixels. HxRG dark frame pixels are a 
+    time-series of 10-1000+ 'read up the ramp' The generator will samples 
+    `batch_size` number of pixel time series, based on the prescribed 
+    `percent_per_class` distribution of good + bad pixels (e.g. 99% vs 1%, 
+    respectively).
 
     Parameters
     ----------
@@ -431,16 +509,23 @@ class HxRGDataGenerator(Sequence):  # , HxRG
     def __init__(self, xarr=None, percent_per_class=None, batch_size=32,
                  dim=100, n_channels=1, shuffle=True):
         """
-        __init__ Initialize the Keras Data generator with a specific distribution of good + bad pixels
+        __init__ Initialize the Keras Data generator with a specific 
+        distribution of good + bad pixels
 
-        The Keras Data Generator creates a set of batches of size `batch_size`, where each sample of pixels has a lenght of dark frame reads per integration `dim`. This will generate `batch_size` number of pixels to be used in training a neural network to classify, regress, or anomaly detect good+ bad pixels from our simulated HxRG detector behaviour.
+        The Keras Data Generator creates a set of batches of size `batch_size`, 
+        where each sample of pixels has a lenght of dark frame reads per 
+        integration `dim`. This will generate `batch_size` number of pixels to 
+        be used in training a neural network to classify, regress, or anomaly 
+        detect good+ bad pixels from our simulated HxRG detector behaviour.
 
         Parameters
         ----------
         xarr : 1Darray, optional
             An input axis over the index of each read, by default None
         percent_per_class : 1Darray (8 elements), optional
-            Set of occurance rates per bad pixel category to establish the distribution of good + bad pixels, by default None; corresponds to all `normal` pixels.
+            Set of occurance rates per bad pixel category to establish the 
+            distribution of good + bad pixels, by default None; corresponds to 
+            all `normal` pixels.
         batch_size : int, optional
             Number of samples to be generated per batch, by default 32
         dim : int, optional
@@ -448,7 +533,8 @@ class HxRGDataGenerator(Sequence):  # , HxRG
         n_channels : int, optional
             Number of pixels to be associate per sample, by default 1
         shuffle : bool, optional
-            Whether to randomly shuffle the samples (True) or read over a predefined set of pixels (False), by default True
+            Whether to randomly shuffle the samples (True) or read over a 
+            predefined set of pixels (False), by default True
         """
         super(Sequence, self).__init__()
         # super(HxRG, self).__init__()
@@ -494,7 +580,9 @@ class HxRGDataGenerator(Sequence):  # , HxRG
         """
         on_epoch_end Updates indexes after each epoch
 
-        Our base code is to generate `batch_size` new pixel time series. In the case of a pre-defined HxRG sample (real world or simulated dark frame)this method randomly resamples over the indices of that dark frame.
+        Our base code is to generate `batch_size` new pixel time series. In the 
+        case of a pre-defined HxRG sample (real world or simulated dark frame)
+        this method randomly resamples over the indices of that dark frame.
         """
         # self.samples = HxRG(percent_per_class=self.percent_per_class)
         pass
