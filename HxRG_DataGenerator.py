@@ -260,14 +260,41 @@ class Pixel(object):
 
 
 class HxRG(Pixel):
+    """
+    HxRG class is used to generate a large number of pixel time series to simulate a full (or subframe) HxRG dark current data cube. This can be done independently or as a subclass to the HxRGDataGenerator object below.
+
+    HxRG detectors include HST/WFC3-IR, JWST/NIRISS, JWST/NIRcam, JWST/NIRSpec, Roman Space Telescope suite of detectors, and dozens of ground-based, IR detectors.
+
+    Args:
+        Pixel (object): inherits the Pixel class (above) to generate a well-defined distribution of `normal` and `bad` pixels
+
+    Returns:
+        HxRG (instance): instance of the HxRG class, with methods to distribute the percent of good + bad pixels over the detector; as well as `populate` the detector with thousands to millions of pixel time series with respect to HxRG detectors' behaviours.
+    """
+
     def __init__(self, n_norm, n_bad, populate=False,
-                 percent_per_class=None, n_classes=10):
+                 percent_per_class=None):
+        """
+        __init__ Initiates the configuration of an HxRG detector, as a set of thousands to millions of IR time series ('pixels')
+
+        Create the underlying distribution and number of good + bad pixels over the full (or subframe) HxRG image, data cube
+
+        Parameters
+        ----------
+        n_norm : int
+            Number of 'good' pixels
+        n_bad : int
+            Number of 'bad' pixels
+        populate : bool, optional
+            Whether to generate `n_pixels` time-series as a list below, by default False
+        percent_per_class : 1Darray (8 elements), optional
+            the percent of each bad pixel as a function of number of total pixels. The order *must* be [normal, hot, hot saturated, cold, cold saturated, cosmic ray, popcorn, noisy], by default None
+        """
         super().__init__()
 
         self.n_norm = n_norm
         self.n_bad = n_bad
         self.n_pixels = self.n_norm + self.n_bad
-        self.n_classes = n_classes
         self.percent_per_class = percent_per_class
 
         # Compute the fraction of pixels
@@ -280,7 +307,11 @@ class HxRG(Pixel):
             self.populate_detector()
 
     def configure_pixel_percentage(self):
+        """
+        configure_pixel_percentage Convert from percent_per_class to fraction of each category of bad pixel and normal pixel
 
+        The inputs for `percent_per_class` are in percetn of pixels for each category of good + bad pixels. This method reorganizes that information, as wll as establishes both the default (percent_per_class=None) and special example (percent_per_class='nircam') distribution. The default behaviour places all pixels in the 'normal' bin with `self.frac_normal = 1`. The special example (percent_per_class='nircam') option distributes the percent of each bad pixel as described in Raucher et al 2017. If `percent_per_class` is provided as an 8-element array, then this function will renormalize it to integrate to 1.0.
+        """
         percent_per_class_given = False
         if self.percent_per_class is None:
             self.frac_normal = 1.0
@@ -330,8 +361,20 @@ class HxRG(Pixel):
             #   percentage of pixels other than `bad` pixels
             self.percent_per_class[0] = 1 - self.percent_per_class.sum()
 
+        # Rebalance all elements to integrate to exactly 1.0
+        #   This is a catch to ensure that the distribution is valid
+        self.percent_per_class /= self.percent_per_class.sum()
+
     def configure_pixel_numbers(self, assign_remainder=0):
-        # if we want non uniform ditributions
+        """
+        configure_pixel_numbers convert from percentage of pixels to actual number of pixels, and assigns the remainder to the normal pixel category (or other assigned through kwarg above)
+
+        Parameters
+        ----------
+        assign_remainder : int, optional
+            index associated with the category of good or bad pixel that the remainder of all pixels on the detector should be placed within,
+            by default 0:normal
+        """
         self.n_hot = int(self.n_bad * self.frac_hot)
         self.n_sat_hot = int(self.n_bad * self.frac_sat_hot)
         self.n_cold = int(self.n_bad * self.frac_cold)
@@ -356,6 +399,11 @@ class HxRG(Pixel):
         self.n_per_class[assign_remainder] += n_leftover
 
     def populate_detector(self):
+        """
+        populate_detector Create a simualtion fo the HxRG detector in question
+
+        Iterate over the number of pixels to create a simulated HxRG dark frame (image cube) of 'mostly' normal pixels with ~1% of bad pixels.
+        """
         self.pixels = []
         for method_name, n_samples in zip(self.__all__, self.n_per_class):
             if n_samples > 0:
@@ -368,51 +416,85 @@ class HxRG(Pixel):
         self.pixels = self.pixels[indices]
 
 
-class HxRGDataGenerator(Sequence, HxRG):
-    'Generates data for Keras'
+class HxRGDataGenerator(Sequence):  # , HxRG
+    """
+    HxRGDataGenerator Keras Data Generator for HxRG time-series dark pixels
+
+    This Keras Data Generator can be used to train a neural network on the HxRG dark current time-series dark pixels to classify, regress, or anomaly detect bad pixels from normal pixels. HxRG dark frame pixels are a time-series of 10-1000+ 'read up the ramp' The generator will samples `batch_size` number of pixel time series, based on the prescribed `percent_per_class` distribution of good + bad pixels (e.g. 99% vs 1%, respectively).
+
+    Parameters
+    ----------
+    Sequence : Keras Data Generator class
+        Super class for using a generator when training a keras neural network.
+    """
 
     def __init__(self, xarr=None, percent_per_class=None, batch_size=32,
-                 dim=100, n_channels=1, n_classes=9, shuffle=True):
+                 dim=100, n_channels=1, shuffle=True):
+        """
+        __init__ Initialize the Keras Data generator with a specific distribution of good + bad pixels
+
+        The Keras Data Generator creates a set of batches of size `batch_size`, where each sample of pixels has a lenght of dark frame reads per integration `dim`. This will generate `batch_size` number of pixels to be used in training a neural network to classify, regress, or anomaly detect good+ bad pixels from our simulated HxRG detector behaviour.
+
+        Parameters
+        ----------
+        xarr : 1Darray, optional
+            An input axis over the index of each read, by default None
+        percent_per_class : 1Darray (8 elements), optional
+            Set of occurance rates per bad pixel category to establish the distribution of good + bad pixels, by default None; corresponds to all `normal` pixels.
+        batch_size : int, optional
+            Number of samples to be generated per batch, by default 32
+        dim : int, optional
+            Number of frames to be generated per sample, by default 100
+        n_channels : int, optional
+            Number of pixels to be associate per sample, by default 1
+        shuffle : bool, optional
+            Whether to randomly shuffle the samples (True) or read over a predefined set of pixels (False), by default True
+        """
         super(Sequence, self).__init__()
-        super(HxRG, self).__init__()
+        # super(HxRG, self).__init__()
 
         self.percent_per_class = percent_per_class
         self.batch_size = batch_size
         self.n_channels = n_channels
-        self.n_classes = n_classes
         self.shuffle = shuffle
         self.on_epoch_end()
 
     def __len__(self):
-        'Denotes the number of batches per epoch'
-        return sum((self.batch_size, self.dim, self.n_channels))
+        """
+        __len__ Denotes the number of batches per epoch
+
+        Returns
+        -------
+        int
+            number of batches per epoch
+        """
+        return self.batch_size
 
     def __getitem__(self, index):
-        'Generate one batch of data'
-        # Generate indexes of the batch
+        """
+        __getitem__ Generate one batch of data
 
-        # Generate data
-        X, y = self.__data_generation(list_IDs_temp)
+        Parameters
+        ----------
+        index : int, optional
+            starting position for a predefined HxRG simulated dark frame
 
-        return X, y
+        Returns
+        -------
+        2Darray
+            batch of samples, sized (batch_size, dim, n_channels)
+        """
+        detector = HxRG(n_norm=batch_size, n_bad=0)
+
+        # Return the list of IR pixel time series the input/output
+        #   data for the autoencoder (input == output)
+        return detector.pixels
 
     def on_epoch_end(self):
-        'Updates indexes after each epoch'
-        self.samples = HxRG(percent_per_class=self.percent_per_class)
+        """
+        on_epoch_end Updates indexes after each epoch
 
-    def __data_generation(self, list_IDs_temp):
-        # X : (n_samples, *dim, n_channels)
-        'Generates data containing batch_size samples'
-        # Initialization
-        X = np.empty((self.batch_size, *self.dim, self.n_channels))
-        y = np.empty((self.batch_size), dtype=int)
-
-        # Generate data
-        for i, ID in enumerate(list_IDs_temp):
-            # Store sample
-            X[i, ] = np.load('data/' + ID + '.npy')
-
-            # Store class
-            y[i] = self.labels[ID]
-
-        return X, to_categorical(y, num_classes=self.n_classes)
+        Our base code is to generate `batch_size` new pixel time series. In the case of a pre-defined HxRG sample (real world or simulated dark frame)this method randomly resamples over the indices of that dark frame.
+        """
+        # self.samples = HxRG(percent_per_class=self.percent_per_class)
+        pass
