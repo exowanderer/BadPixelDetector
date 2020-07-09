@@ -465,8 +465,6 @@ class HxRG(Pixel):
 
         # Set/take leftovers to/from `normal`:0, `hot pixel`:1, etc
         n_leftover = self.n_bad - self.n_per_class[1:].sum()
-        print(n_leftover)
-        print(self.n_per_class[assign_remainder])
         self.n_per_class[assign_remainder] += n_leftover
 
     def populate_detector(self):
